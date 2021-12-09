@@ -1,40 +1,58 @@
-import React from 'react'
+import React, { useEffect, useReducer } from 'react'
 import queryString from 'query-string'
 import { fetchUser, fetchPosts } from '../utils/api'
 import Loading from './Loading'
 import { formatDate } from '../utils/helpers'
 import PostsList from './PostsList'
 
-export default class User extends React.Component {
-  state = {
-    user: null,
-    loadingUser: true,
-    posts: null,
-    loadingPosts: true,
-    error: null,
+const userReducer = (state, action) => {
+  switch(action.type) {
+    case "user": {
+      return { ...state, user: action.user, loadingUser: false}
+    }
+    case "posts": {
+      return {
+        ...state,
+        posts: action.posts,
+        loadingPosts: false,
+        error: null
+      }
+    }
+    case "error": {
+      return {
+        error: action.message,
+        loadingUser: false,
+        loadingPosts: false
+      }
+    }
+    default: {
+      throw new Error(`${action.type} is not a valid action.`)
+    }
   }
-  componentDidMount() {
-    const { id } = queryString.parse(this.props.location.search)
+}
 
+export default function User({location}) {
+  const [state, dispatch] = useReducer(userReducer, {
+    user: null,
+    posts: null, 
+    loadingUser: true,
+    loadingPosts: true,
+    error: null
+  })
+  const { id } = queryString.parse(location.search)
+
+  useEffect(() => {
     fetchUser(id)
       .then((user) => {
-        this.setState({ user, loadingUser: false})
+        dispatch({type: "user", user})
 
         return fetchPosts(user.submitted.slice(0, 30))
       })
-      .then((posts) => this.setState({
-        posts,
-        loadingPosts: false,
-        error: null
-      }))
-      .catch(({ message }) => this.setState({
-        error: message,
-        loadingUser: false,
-        loadingPosts: false
-      }))
-  }
-  render() {
-    const { user, posts, loadingUser, loadingPosts, error } = this.state
+      .then((posts) => dispatch({type: "posts", posts}))
+      .catch(({ message }) => dispatch({type: "error", message}))
+    },[id])
+
+    const { user, posts, loadingUser, loadingPosts, error } = state
 
     if (error) {
       return <p className='center-text error'>{error}</p>
@@ -60,5 +78,4 @@ export default class User extends React.Component {
             </React.Fragment>}
       </React.Fragment>
     )
-  }
 }
