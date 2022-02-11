@@ -1,10 +1,31 @@
 import React, { useEffect, useReducer } from 'react'
-import PropTypes from 'prop-types'
-import { fetchMainPosts } from '../utils/api'
+import { fetchMainPosts, Item } from '../utils/api'
 import Loading from './Loading'
 import PostsList from './PostsList'
 
-const postsReducer = (state, action) => {
+interface PostsReducerState {
+  posts: null | Item[];
+  error: string | null;
+  loading: boolean;
+}
+
+interface FetchAction {
+  type: "loading";
+}
+
+interface SuccessAction {
+  type: "posts";
+  posts: Item[];
+}
+
+interface ErrorAction {
+  type: 'error';
+  message: string;
+}
+
+type PostsReducerActions = FetchAction | SuccessAction | ErrorAction;
+
+function postsReducer(state: PostsReducerState, action: PostsReducerActions): PostsReducerState {
   switch(action.type) {
     case "posts": {
       return {
@@ -15,6 +36,7 @@ const postsReducer = (state, action) => {
     } 
     case "error": {
       return {
+        posts: null,
         error: action.message,
         loading: false
       }
@@ -30,7 +52,7 @@ const postsReducer = (state, action) => {
   }
 }
 
-export default function Posts({type}) {
+export default function Posts({type} : { type: 'top'|'new' }) {
   const [state, dispatch] = useReducer(postsReducer, {
     posts: null,
     error: null,
@@ -61,7 +83,3 @@ export default function Posts({type}) {
 
     return <PostsList posts={posts} />
   }
-
-Posts.propTypes = {
-  type: PropTypes.oneOf(['top', 'new'])
-}

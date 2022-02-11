@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
+import React, { useEffect, useState, CSSProperties } from 'react'
 
 const styles = {
   content: {
@@ -9,7 +8,7 @@ const styles = {
     right: '0',
     marginTop: '20px',
     textAlign: 'center',
-  }
+  } as CSSProperties
 }
 
 export default function Loading({text='Loading', speed=300}) {
@@ -32,9 +31,4 @@ export default function Loading({text='Loading', speed=300}) {
       {content}
     </p>
   )
-}
-
-Loading.propTypes = {
-  text: PropTypes.string,
-  speed: PropTypes.number
 }

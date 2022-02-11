@@ -18,10 +18,10 @@ function App() {
 
   return (
     <Router>
-      <ThemeProvider value={{theme, toggleTheme}}>
+      <ThemeProvider value={theme}>
         <div className={theme}>
           <div className='container'>
-            <Nav />
+            <Nav toggleTheme={toggleTheme}/>
 
             <React.Suspense fallback={<Loading />}>
               <Switch>

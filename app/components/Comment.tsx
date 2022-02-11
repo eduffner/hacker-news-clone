@@ -1,12 +1,12 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+import { Comment as CommentType } from '../utils/api'
 import PostMetaInfo from './PostMetaInfo'
 
-export default function Comment ({ comment }) {
+
+export default function Comment({ comment }: { comment: Pick<CommentType, "by" | "time" | "id" | "text">; }) {
   return (
     <div className='comment'>
       <PostMetaInfo
-        comment={true}
         by={comment.by}
         time={comment.time}
         id={comment.id}

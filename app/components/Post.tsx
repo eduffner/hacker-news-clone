@@ -1,13 +1,42 @@
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useReducer } from 'react'
 import queryString from 'query-string'
-import { fetchItem, fetchPosts, fetchComments } from '../utils/api'
+import { fetchItem, fetchComments, Item, Comment } from '../utils/api'
 import Loading from './Loading'
 import PostMetaInfo from './PostMetaInfo'
 import Title from './Title'
-import Comment from './Comment'
+import  {default as CommentComponent} from './Comment'
 
 
-const postReducer = (state, action) => {
+interface PostReducerState {
+  loadingComments: boolean;
+  loadingPost: boolean;
+  post: Item | null;
+  comments: Comment[] | null;
+  error: string | null;
+}
+
+interface FetchAction {
+  type: 'fetch';
+}
+
+interface PostAction {
+  type: 'post';
+  post: Item;
+}
+
+interface CommentsAction {
+  type: 'comments';
+  comments: Comment[];
+}
+
+interface ErrorAction {
+  type: 'error';
+  message: string;
+}
+
+type PostReducerActions = PostAction | ErrorAction | FetchAction | CommentsAction;
+
+function postReducer(state: PostReducerState, action: PostReducerActions): PostReducerState {
   switch (action.type) {
     case "post": {
       return {
@@ -37,7 +66,8 @@ const postReducer = (state, action) => {
   }
 }
 
-export default function Post({location}) {
+export default function Post({ location }: { location: { search: string } } ) {
+  const { id } = queryString.parse(location.search) as { id: string };
   const [state, dispatch] = useReducer(postReducer, {
     post: null,
     loadingPost: true,
@@ -45,7 +75,6 @@ export default function Post({location}) {
     loadingComments: true,
     error: null,
   })
-  const { id } = queryString.parse(location.search)
 
   useEffect(() => {
     fetchItem(id)
@@ -72,36 +101,35 @@ export default function Post({location}) {
 
   const { post, loadingPost, comments, loadingComments, error } = state
 
-    if (error) {
-      return <p className='center-text error'>{error}</p>
-    }
+  if (error) {
+    return <p className='center-text error'>{error}</p>
+  }
 
-    return (
-      <React.Fragment>
-        {loadingPost === true
-          ? <Loading text='Fetching post' />
-          : <React.Fragment>
-              <h1 className='header'>
-                <Title url={post.url} title={post.title} id={post.id} />
-              </h1>
-              <PostMetaInfo
-                by={post.by}
-                time={post.time}
-                id={post.id}
-                descendants={post.descendants}
-              />
-              <p dangerouslySetInnerHTML={{__html: post.text}} />
-            </React.Fragment>}
-        {loadingComments === true
-          ? loadingPost === false && <Loading text='Fetching comments' />
-          : <React.Fragment>
-              {comments.map((comment) =>
-                <Comment
-                  key={comment.id}
-                  comment={comment}
-                />
-              )}
-            </React.Fragment>}
-      </React.Fragment>
-    )
+  return (
+    <React.Fragment>
+      {loadingPost === true || !post
+      ? <Loading text='Fetching post' />
+      : <React.Fragment>
+          <h1 className='header'>
+            <Title url={post.url} title={post.title} id={post.id} />
+          </h1>
+          <PostMetaInfo
+            by={post.by}
+            time={post.time}
+            id={post.id}
+            descendants={post.descendants}
+          />
+          <p dangerouslySetInnerHTML={{ __html: post.text }} />
+        </React.Fragment>
+      }
+      {loadingComments === true
+      ? loadingPost === false && <Loading text='Fetching comments' />
+      : <React.Fragment>
+          {comments && comments.map((comment: Comment) => (
+            <CommentComponent key={comment.id} comment={comment} />
+          ))}
+        </React.Fragment>
+      }
+    </React.Fragment>
+  )
 }

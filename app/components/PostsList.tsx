@@ -1,10 +1,10 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import PostMetaInfo from './PostMetaInfo'
 import Title from './Title'
+import { Item } from '../utils/api'
 
-export default function PostsList ({ posts }) {
-  if (posts.length === 0) {
+export default function PostsList({ posts }: { posts: Item[] | null }) {
+  if (posts && posts.length === 0) {
     return (
       <p className='center-text'>
         This user hasn't posted yet
@@ -14,7 +14,7 @@ export default function PostsList ({ posts }) {
 
   return (
     <ul>
-      {posts.map((post) => {
+      {posts && posts.map((post) => {
         return (
           <li key={post.id} className='post'>
             <Title url={post.url} title={post.title} id={post.id} />
@@ -29,8 +29,4 @@ export default function PostsList ({ posts }) {
       })}
     </ul>
   )
-}
-
-PostsList.propTypes = {
-  posts: PropTypes.array.isRequired
 }
